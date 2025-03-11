@@ -10,6 +10,7 @@ import static org.lwjgl.opengl.GL11.glPolygonMode;
 import static org.lwjgl.opengl.GL15.glBindBuffer;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -30,6 +31,8 @@ public class Scene {
 	private int colourBuffer;
 
 	private Shader shader;
+	
+	private Matrix4f dest;
 
 	public Scene() {
 
@@ -75,8 +78,12 @@ public class Scene {
 			0, 1, 3, // right triangle
 			};
 			// @formatter:on
-
+		
 		indexBuffer = GLBuffers.createIndexBuffer(indices);
+		dest = new Matrix4f();
+		dest.identity();
+		Vector2f translate = new Vector2f(0.3f, 0.3f);
+		dest = translationMatrix(translate.x, translate.y, dest);
 
 	}
 
@@ -89,6 +96,7 @@ public class Scene {
 
 		// draw using index buffer
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+		shader.setUniform("u_modelMatrix", dest);
 		
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
