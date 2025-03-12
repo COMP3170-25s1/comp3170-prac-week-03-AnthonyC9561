@@ -13,10 +13,13 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import static comp3170.Math.TAU;
+
 
 import comp3170.GLBuffers;
 import comp3170.Shader;
 import comp3170.ShaderLibrary;
+
 
 public class Scene {
 
@@ -32,8 +35,13 @@ public class Scene {
 
 	private Shader shader;
 	
-	private Matrix4f dest;
+	private Matrix4f dest = new Matrix4f();
+	private Matrix4f result = new Matrix4f();
 
+	private static final float TRANSLATION_SPEED = 10.0f;
+	private static final float ROTATION_SPEED = 2*TAU/6;
+	private static final float SCALE_SPEED = 2f;
+	
 	public Scene() {
 
 		shader = ShaderLibrary.instance.compileShader(VERTEX_SHADER, FRAGMENT_SHADER);
@@ -80,11 +88,26 @@ public class Scene {
 			// @formatter:on
 		
 		indexBuffer = GLBuffers.createIndexBuffer(indices);
-		dest = new Matrix4f();
-		dest.identity();
-		Vector2f translate = new Vector2f(0.3f, 0.3f);
-		dest = translationMatrix(translate.x, translate.y, dest);
+		
+		//dest.identity(); //(a) is the default 
+		//dest = rotationMatrix(3*TAU/4, dest); //for rotating it to 270 deg (b)
+		
+		//(C) translate then scale
+		//result = result.mul(translationMatrix(0.5f, -0.5f, dest)).mul(scaleMatrix(0.5f, 0.5f, dest));
 
+		//(d) translate, rotate, scale. 
+		//result = result.mul(translationMatrix(-0.815f, 0.815f, dest)).mul(rotationMatrix(TAU/8, dest)).mul(scaleMatrix(0.25f, 0.25f, dest));
+		
+		result = result.mul(translationMatrix(0.5f, 0f, dest)).mul(scaleMatrix(0.05f, 0.05f, dest));
+		
+	}
+	
+	public void update(float deltaTime) {
+		System.out.println(deltaTime);
+		result = result.mul(translationMatrix(0f,TRANSLATION_SPEED * deltaTime, dest));
+		result = result.mul(rotationMatrix(ROTATION_SPEED * deltaTime, dest));	
+		//result = result.mul(scaleMatrix((float)Math.pow(SCALE_SPEED, deltaTime), (float)Math.pow(SCALE_SPEED, deltaTime), dest));
+		
 	}
 
 	public void draw() {
@@ -96,7 +119,8 @@ public class Scene {
 
 		// draw using index buffer
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-		shader.setUniform("u_modelMatrix", dest);
+		
+		shader.setUniform("u_modelMatrix", result);//adds matrix into shader as a uniform - unifrom in cases where there's multiple vertices to deal with...?
 		
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
@@ -141,14 +165,12 @@ public class Scene {
 	 */
 
 	public static Matrix4f rotationMatrix(float angle, Matrix4f dest) {
-		
-		float rad = (float)Math.toRadians(angle);
-		// TODO: Your code here
+		//where angle is already in radians
 		dest.identity();
-		dest.m00((float)Math.cos(rad));
-		dest.m01((float)Math.sin(rad));
-		dest.m10((float)Math.sin(rad) * -1);
-		dest.m11((float)Math.sin(rad));
+		dest.m00((float)Math.cos(angle));
+		dest.m01((float)Math.sin(angle));
+		dest.m10((float)Math.sin(angle) * -1);
+		dest.m11((float)Math.cos(angle));
 
 		return dest;
 	}
@@ -164,8 +186,6 @@ public class Scene {
 	 */
 
 	public static Matrix4f scaleMatrix(float sx, float sy, Matrix4f dest) {
-
-		// TODO: Your code here
 		dest.identity();
 		dest.m00(sx);
 		dest.m11(sy);	

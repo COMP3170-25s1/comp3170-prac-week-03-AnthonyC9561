@@ -23,6 +23,8 @@ public class Week3 implements IWindowListener {
 	private int height = 800;
 	private Scene scene;
 	
+	long oldTime = System.currentTimeMillis(); //keeps track of the time at the previous frame, used to find the time different between frames to know when to update scene
+	
 	public Week3() throws OpenGLException  {
 		
 		// create window with title, size, and a listener (this)
@@ -45,14 +47,19 @@ public class Week3 implements IWindowListener {
 		scene = new Scene();
 		
 	}
-
+    
+	public void update() {
+		long time = System.currentTimeMillis();
+		float deltaTime = (time - oldTime) /1000f;
+		oldTime = time;
+		scene.update(deltaTime);
+	}
 
 	@Override
 	public void draw() {
-
+		update();//called to update the scene at every frame
         // clear the colour buffer
 		glClear(GL_COLOR_BUFFER_BIT);	
-		
 		scene.draw();
 	    
 	}
