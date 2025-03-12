@@ -24,7 +24,7 @@ public class Week3 implements IWindowListener {
 	private Scene scene;
 	
 	long oldTime = System.currentTimeMillis(); //keeps track of the time at the previous frame, used to find the time different between frames to know when to update scene
-	
+	//need to initialise in milliseconds in order for the starting transformation to work (since deltatime << starting time)
 	public Week3() throws OpenGLException  {
 		
 		// create window with title, size, and a listener (this)
